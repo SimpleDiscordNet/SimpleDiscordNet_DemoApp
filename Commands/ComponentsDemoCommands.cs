@@ -54,10 +54,9 @@ public sealed class ComponentsDemoCommands
     }
 
     /// <summary>
-    /// Opens a modal from a slash command. Disable auto-defer so modal can be the initial response.
+    /// Opens a modal from a slash command. Do not defer so modal can be the initial response.
     /// </summary>
-    [AutoDefer(false)]
-    [SlashCommand("modal", "Open a modal with text inputs (no auto-defer)")]
+    [SlashCommand("modal", "Open a modal with text inputs")]
     public Task ModalAsync(InteractionContext ctx)
     {
         return ctx.OpenModalAsync(customId: "modal:feedback", title: "Feedback",
@@ -112,8 +111,7 @@ public sealed class ComponentsDemoCommands
     }
     
 
-    // To open a modal from a component click, disable auto-defer; modals cannot be opened after deferral.
-    [AutoDefer(false)]
+    // To open a modal from a component click, do not defer; modals cannot be opened after deferral.
     [ComponentHandler("components:openmodal")]
     public Task OnOpenModalAsync(InteractionContext ctx)
     {

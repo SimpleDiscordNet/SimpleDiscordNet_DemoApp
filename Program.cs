@@ -2,11 +2,12 @@
 // --------------------------------
 // This program demonstrates:
 // - Creating and starting a Discord bot using SimpleDiscordNet
-// - Registering an ungrouped slash command
-// - Registering a command group with two subcommands
+// - Slash commands (ungrouped and grouped with subcommands)
+// - Components (buttons, selects) and modals with handlers
 // - Sending messages and embeds (both via slash replies and direct channel send)
-// - Using Ambient data attributes [DiscordGuilds], [DiscordChannels], [DiscordMembers], [DiscordUsers]
-//   and reading cached data through DiscordContext
+// - Ambient data access via DiscordContext with [DiscordContext] attribute
+// - Event handling (DMs, connection, etc.)
+// - Development mode for instant command syncing
 //
 // How to run:
 // 1) Set environment variables before running:
@@ -16,9 +17,12 @@
 // 2) Start the app. On first run (in development mode), slash commands are synced immediately to DEV_GUILD_ID.
 // 3) In Discord, try:
 //    - /hello
-//    - /demo text
-//    - /demo embed
+//    - /demo text, /demo embed
 //    - /ambient info
+//    - /components show, /components select, /components modal
+//    - /messages text, /messages embed, /messages complex
+//    - /permissions, /roles list, /roles demo
+//    - /channels list, /channels info, /channels types
 
 using Microsoft.Extensions.Logging;
 using SimpleDiscordNet;
@@ -59,15 +63,15 @@ public sealed class Program
         });
         ILogger logger = loggerFactory.CreateLogger("SimpleDiscordNetDemo");
 
-        string token = "YOUR_TOKEN_HERE";
+        string? token = Environment.GetEnvironmentVariable("DISCORD_TOKEN");
         if (string.IsNullOrWhiteSpace(token))
         {
             logger.LogError("Set DISCORD_TOKEN environment variable to your bot token.");
             return;
         }
 
-        string devGuildId = "YOUR_GUILD_ID";
-        string demoChannelId = "A_CHANNEL_ID_IN_YOUR_GUILD";
+        string? devGuildId = Environment.GetEnvironmentVariable("DEV_GUILD_ID");
+        string? demoChannelId = Environment.GetEnvironmentVariable("DEMO_CHANNEL_ID");
 
         // Build the bot
         DiscordBot bot = DiscordBot.NewBuilder()

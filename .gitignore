@@ -1,0 +1,7 @@
+# Local secret file for Discord bot token (do not commit)
+discord_token.txt
+
+# Ignore files for development not required by other
+/.idea
+/bin
+/obj
