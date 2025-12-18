@@ -2,23 +2,27 @@
 // --------------------------------
 // This program demonstrates:
 // - Creating and starting a Discord bot using SimpleDiscordNet
-// - Registering an ungrouped slash command
-// - Registering a command group with two subcommands
+// - Slash commands (ungrouped and grouped with subcommands)
+// - Components (buttons, selects) and modals with handlers
 // - Sending messages and embeds (both via slash replies and direct channel send)
-// - Using Ambient data attributes [DiscordGuilds], [DiscordChannels], [DiscordMembers], [DiscordUsers]
-//   and reading cached data through DiscordContext
+// - Ambient data access via DiscordContext with [DiscordContext] attribute
+// - Event handling (DMs, connection, etc.)
+// - Development mode for instant command syncing
 //
 // How to run:
-// 1) Set environment variables before running:
+// 1) Create a discord_token.txt file (see discord_token.txt.example) with:
 //    - DISCORD_TOKEN    : your bot token
 //    - DEV_GUILD_ID     : a guild ID where you have installed the bot (used for instant dev sync)
 //    - DEMO_CHANNEL_ID  : optional channel ID to demonstrate direct channel sending
 // 2) Start the app. On first run (in development mode), slash commands are synced immediately to DEV_GUILD_ID.
 // 3) In Discord, try:
 //    - /hello
-//    - /demo text
-//    - /demo embed
+//    - /demo text, /demo embed
 //    - /ambient info
+//    - /components show, /components select, /components modal
+//    - /messages text, /messages embed, /messages complex
+//    - /permissions, /roles list, /roles demo
+//    - /channels list, /channels info, /channels types
 
 using Microsoft.Extensions.Logging;
 using SimpleDiscordNet;
@@ -59,15 +63,25 @@ public sealed class Program
         });
         ILogger logger = loggerFactory.CreateLogger("SimpleDiscordNetDemo");
 
-        string token = "YOUR_TOKEN_HERE";
-        if (string.IsNullOrWhiteSpace(token))
+        // Read configuration from discord_token.txt
+        ConfigurationReader config = new();
+        string configFile = "discord_token.txt";
+
+        if (!config.Load(configFile))
         {
-            logger.LogError("Set DISCORD_TOKEN environment variable to your bot token.");
+            logger.LogError("Configuration file 'discord_token.txt' not found. Please create it based on discord_token.txt.example");
             return;
         }
 
-        string devGuildId = "YOUR_GUILD_ID";
-        string demoChannelId = "A_CHANNEL_ID_IN_YOUR_GUILD";
+        string? token = config.GetValue("DISCORD_TOKEN");
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            logger.LogError("DISCORD_TOKEN not found in discord_token.txt. Please set your bot token.");
+            return;
+        }
+
+        string? devGuildId = config.GetValue("DEV_GUILD_ID");
+        string? demoChannelId = config.GetValue("DEMO_CHANNEL_ID");
 
         // Build the bot
         DiscordBot bot = DiscordBot.NewBuilder()
