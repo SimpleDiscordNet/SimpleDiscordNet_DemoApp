@@ -1,0 +1,15 @@
+# Discord Bot Configuration
+# Copy this file to discord_token.txt and fill in your values
+# IMPORTANT: Never commit discord_token.txt to version control!
+
+# Your Discord bot token (required)
+# Get this from: https://discord.com/developers/applications
+DISCORD_TOKEN=your_bot_token_here
+
+# Your development guild ID (required)
+# Enable Developer Mode in Discord, right-click your server, and copy ID
+DEV_GUILD_ID=your_dev_guild_id_here
+
+# Optional: A channel ID to demonstrate direct channel sending after startup
+# Right-click a channel and copy ID
+DEMO_CHANNEL_ID=optional_channel_id_here

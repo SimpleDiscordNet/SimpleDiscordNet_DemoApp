@@ -116,13 +116,26 @@ The `.WithDevelopmentMode(true)` plus `.WithDevelopmentGuild(...)` ensures your 
 ### Running the demo
 
 1. Open the solution and restore/build.
-2. Set the following environment variables:
+
+2. Create a `discord_token.txt` file in the project root directory based on `discord_token.txt.example`:
+   ```
+   # Discord Bot Configuration
+   # Copy this file to discord_token.txt and fill in your values
+
+   DISCORD_TOKEN=your_bot_token_here
+   DEV_GUILD_ID=your_dev_guild_id_here
+   DEMO_CHANNEL_ID=optional_channel_id_here
+   ```
+
+   Required values:
    - `DISCORD_TOKEN`: your bot token (required)
    - `DEV_GUILD_ID`: a guild ID where your bot is installed for instant dev sync (required)
-   - `DEMO_CHANNEL_ID`: a channel ID to demonstrate direct channel sending after startup (optional)
-   - `AMBIENT_TICK_SECONDS`: interval in seconds for ambient snapshot logging (optional, defaults to 60)
 
-   **Important:** Keep your real bot token secret and never commit it to version control.
+   Optional values:
+   - `DEMO_CHANNEL_ID`: a channel ID to demonstrate direct channel sending after startup
+   - Environment variable `AMBIENT_TICK_SECONDS`: interval in seconds for ambient snapshot logging (defaults to 60)
+
+   **Important:** Keep your real bot token secret and never commit `discord_token.txt` to version control. The file is already in `.gitignore`.
 
 3. Run the app:
    ```bash

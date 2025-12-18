@@ -10,7 +10,7 @@
 // - Development mode for instant command syncing
 //
 // How to run:
-// 1) Set environment variables before running:
+// 1) Create a discord_token.txt file (see discord_token.txt.example) with:
 //    - DISCORD_TOKEN    : your bot token
 //    - DEV_GUILD_ID     : a guild ID where you have installed the bot (used for instant dev sync)
 //    - DEMO_CHANNEL_ID  : optional channel ID to demonstrate direct channel sending
@@ -63,15 +63,25 @@ public sealed class Program
         });
         ILogger logger = loggerFactory.CreateLogger("SimpleDiscordNetDemo");
 
-        string? token = Environment.GetEnvironmentVariable("DISCORD_TOKEN");
-        if (string.IsNullOrWhiteSpace(token))
+        // Read configuration from discord_token.txt
+        ConfigurationReader config = new();
+        string configFile = "discord_token.txt";
+
+        if (!config.Load(configFile))
         {
-            logger.LogError("Set DISCORD_TOKEN environment variable to your bot token.");
+            logger.LogError("Configuration file 'discord_token.txt' not found. Please create it based on discord_token.txt.example");
             return;
         }
 
-        string? devGuildId = Environment.GetEnvironmentVariable("DEV_GUILD_ID");
-        string? demoChannelId = Environment.GetEnvironmentVariable("DEMO_CHANNEL_ID");
+        string? token = config.GetValue("DISCORD_TOKEN");
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            logger.LogError("DISCORD_TOKEN not found in discord_token.txt. Please set your bot token.");
+            return;
+        }
+
+        string? devGuildId = config.GetValue("DEV_GUILD_ID");
+        string? demoChannelId = config.GetValue("DEMO_CHANNEL_ID");
 
         // Build the bot
         DiscordBot bot = DiscordBot.NewBuilder()
