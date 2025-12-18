@@ -154,18 +154,62 @@ The `.WithDevelopmentMode(true)` plus `.WithDevelopmentGuild(...)` ensures your 
 
 5. Observe logs in the console with timestamps and levels, including any forwarded exceptions.
 
-### Building for Production (AoT)
+### Building for Production (Native AoT)
 
-To build with Native AoT for optimized performance and small binary size:
+Native AoT (Ahead-of-Time) compilation produces a single native executable with fast startup and small size. This requires C++ build tools to be installed.
+
+#### Prerequisites: Install Visual Studio Build Tools
+
+Native AoT compilation requires the Visual Studio C++ toolchain. Install it via command line:
+
+**Using winget (Windows Package Manager):**
+```powershell
+winget install Microsoft.VisualStudio.2022.BuildTools --silent --override "--wait --quiet --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621 --includeRecommended"
+```
+
+**Alternative: Direct download and install:**
+```powershell
+# Download the installer
+$installerUrl = "https://aka.ms/vs/17/release/vs_buildtools.exe"
+$installerPath = "$env:TEMP\vs_buildtools.exe"
+Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath
+
+# Install with C++ workload
+Start-Process -FilePath $installerPath -ArgumentList `
+  "--quiet", "--wait", "--norestart", `
+  "--add", "Microsoft.VisualStudio.Workload.VCTools", `
+  "--add", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", `
+  "--add", "Microsoft.VisualStudio.Component.Windows11SDK.22621", `
+  "--includeRecommended" `
+  -Wait -NoNewWindow
+```
+
+**Verify installation:**
+```powershell
+# Check if C++ compiler is available
+where.exe cl.exe
+
+# Check if linker is available
+where.exe link.exe
+```
+
+#### Build Native AoT Binary
+
+Once the C++ build tools are installed:
 
 ```bash
 dotnet publish --configuration Release
 ```
 
-The project is configured with Native AoT settings in Release mode, including:
+The output will be a single native executable in `bin\Release\net10.0\win-x64\publish\`
+
+**Project AoT Configuration:**
+The project is configured with Native AoT settings in Release mode:
 - `PublishAot=true` - Enables Native AoT compilation
+- `SelfContained=true` - Produces standalone executable (required for AoT)
 - `PublishTrimmed=true` - Trims unused code
 - `InvariantGlobalization=true` - Reduces globalization overhead
+- `PublishSingleFile=true` - Produces single executable file
 - Warnings as errors for IL trimming and AoT compatibility
 
 ---

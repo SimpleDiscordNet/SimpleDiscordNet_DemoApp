@@ -18,8 +18,8 @@
     <!-- Prefer smallest codegen; good for NativeAOT -->
     <OptimizationPreference>Size</OptimizationPreference>
 
-    <!-- Produce a single self-contained binary (explicit for clarity) -->
-    <SelfContained>false</SelfContained>
+    <!-- Produce a single self-contained binary (required for AoT) -->
+    <SelfContained>true</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>
 
     <!-- Strip PDB/symbols from published output -->
