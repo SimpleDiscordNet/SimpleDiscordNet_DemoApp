@@ -1,4 +1,3 @@
-using SimpleDiscordNet.Attributes;
 using SimpleDiscordNet.Context;
 using SimpleDiscordNet.Entities;
 
@@ -8,7 +7,6 @@ namespace SimpleDiscordNet_DemoApp.Services;
 /// Periodic ambient snapshot logger. Demonstrates reading cached data via DiscordContext
 /// and defensively deduplicating by stable IDs in case upstream sources produce duplicates.
 /// </summary>
-[DiscordContext]
 public sealed class AmbientSnapshotService
 {
     /// <summary>
@@ -19,9 +17,9 @@ public sealed class AmbientSnapshotService
     {
         // Distinct counts (defensive)
         int distinctGuilds = CountDistinct(DiscordContext.Guilds, static g => g.Id);
-        int distinctChannels = CountDistinct(DiscordContext.Channels, static x => $"{x.Guild.Id}:{x.Channel.Id}");
-        int distinctMembers = CountDistinct(DiscordContext.Members, static x => $"{x.Guild.Id}:{x.Member.User.Id}");
-        int distinctUsers = CountDistinct(DiscordContext.Users, static x => $"{x.Guild.Id}:{x.User.Id}");
+        int distinctChannels = CountDistinct(DiscordContext.Channels, static x => $"{x.Guild?.Id ?? 0}:{x.Id}");
+        int distinctMembers = CountDistinct(DiscordContext.Members, static x => $"{x.Guild.Id}:{x.User.Id}");
+        int distinctUsers = CountDistinct(DiscordContext.Users, static x => $"{string.Join(",", x.Guilds.Select(g => g.Id))}:{x.Id}");
 
         // Raw counts
         int rawGuilds = DiscordContext.Guilds.Count;

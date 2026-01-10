@@ -26,6 +26,7 @@
 
 using Microsoft.Extensions.Logging;
 using SimpleDiscordNet;
+using SimpleDiscordNet.Context;
 using SimpleDiscordNet.Events;
 using SimpleDiscordNet_DemoApp.Services;
 using SimpleDiscordNet_DemoApp.Internal;
@@ -88,8 +89,8 @@ public sealed class Program
             .WithToken(token)
             // Intents: request only what you need. For Members ambient data, include GuildMembers.
             .WithIntents(DiscordIntents.Guilds | DiscordIntents.GuildMembers | DiscordIntents.DirectMessages | DiscordIntents.GuildMessages)
-            // Preload guilds and channels on start (members can be heavy; set to true for demos if your bot has the intent)
-            .WithPreloadOnStart(guilds: true, channels: true, members: false)
+            // Preload guilds, channels, and members on start to populate DiscordContext cache
+            .WithPreloadOnStart(guilds: true, channels: true, members: true)
             // Enable dev mode so slash commands sync instantly to your dev guild before connecting
             .WithDevelopmentMode(true)
             // Conditionally add development guild without introducing a temporary builder variable
@@ -123,11 +124,25 @@ public sealed class Program
         };
         DiscordEvents.Connected += (_, __) => logger.LogInformation("Connected to Discord Gateway.");
         DiscordEvents.Error += (_, ex) => logger.LogError(ex, "SimpleDiscordNet reported an error");
-        
+        DiscordEvents.GuildAdded += (_, guildEvent) =>
+        {
+            var members = DiscordContext.GetMembersInGuild(guildEvent.Guild.Id);
+            logger.LogInformation("GUILD_ADDED event fired for guild: {GuildId} ({GuildName}). Members in cache: {MemberCount}",
+                guildEvent.Guild.Id, guildEvent.Guild.Name, members.Count());
+        };
+        DiscordEvents.GuildReady += (_, guildEvent) =>
+        {
+            var members = DiscordContext.GetMembersInGuild(guildEvent.Guild.Id);
+            var channels = DiscordContext.GetChannelsInGuild(guildEvent.Guild.Id);
+            var roles = DiscordContext.GetRolesInGuild(guildEvent.Guild.Id);
+            logger.LogInformation("GUILD_READY event fired for guild: {GuildId} ({GuildName}). All data loaded - Members: {MemberCount}, Channels: {ChannelCount}, Roles: {RoleCount}",
+                guildEvent.Guild.Id, guildEvent.Guild.Name, members.Count(), channels.Count(), roles.Count());
+        };
+
         // DM's to the bot can be handled many ways, or we can just log it like this.
         DiscordEvents.DirectMessageReceived += (_, msgEvent) =>
         {
-            logger.LogInformation($"Received DM From: {msgEvent.Message.Author.Username}\nMessage: {msgEvent.Message.Content}");
+            logger.LogInformation($"Received From: {msgEvent.Message.Author.Username}\nMessage: {msgEvent.Message.Content}");
         };
 
         // Start the bot and keep the process alive until Ctrl+C

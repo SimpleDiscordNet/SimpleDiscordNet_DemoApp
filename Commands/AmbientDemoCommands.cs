@@ -1,5 +1,4 @@
 using SimpleDiscordNet;
-using SimpleDiscordNet.Attributes;
 using SimpleDiscordNet.Commands;
 using SimpleDiscordNet.Context;
 
@@ -9,7 +8,6 @@ namespace SimpleDiscordNet_DemoApp.Commands;
 /// Demonstrates ambient data access via DiscordContext using attributes.
 /// Usage: /ambient info
 /// </summary>
-[DiscordContext]
 [SlashCommandGroup("ambient", "Demonstrates ambient data access via DiscordContext")]
 public sealed class AmbientDemoCommands
 {
@@ -30,6 +28,6 @@ public sealed class AmbientDemoCommands
             .WithDescription($"Guilds: {guildCount}\nChannels: {channelCount}\nMembers: {memberCount}\nUsers: {userCount}")
             .WithColor(DiscordColor.Purple);
 
-        await ctx.RespondAsync("Ambient data (cached snapshot):", embed, ephemeral: true);
+        await ctx.RespondAsync("Ambient data (cached snapshot):", embed);
     }
 }

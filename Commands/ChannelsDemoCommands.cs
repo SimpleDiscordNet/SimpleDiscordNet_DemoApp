@@ -1,5 +1,4 @@
 using SimpleDiscordNet;
-using SimpleDiscordNet.Attributes;
 using SimpleDiscordNet.Commands;
 using SimpleDiscordNet.Context;
 
@@ -9,7 +8,6 @@ namespace SimpleDiscordNet_DemoApp.Commands;
 /// Demonstrates channel management and querying features.
 /// Usage: /channels list, /channels info, /channels types
 /// </summary>
-[DiscordContext]
 [SlashCommandGroup("channels", "Channel management demo commands")]
 public sealed class ChannelsDemoCommands
 {
@@ -19,26 +17,29 @@ public sealed class ChannelsDemoCommands
     [SlashCommand("list", "List all channels in this guild")]
     public async Task ListAsync(InteractionContext ctx)
     {
-        string? guildId = ctx.Event.GuildId;
+        string? guildId = ctx.GuildId;
 
         if (string.IsNullOrWhiteSpace(guildId))
         {
-            await ctx.RespondAsync("❌ This command can only be used in a guild (server).", ephemeral: true);
+            await ctx.RespondAsync("❌ This command can only be used in a guild (server).");
             return;
         }
 
         try
         {
-            var channels = DiscordContext.GetChannelsInGuild(guildId).Take(15).ToList();
+            var channels = DiscordContext.GetChannelsInGuild(ulong.Parse(guildId)).Take(15).ToList();
 
             if (channels.Count == 0)
             {
-                await ctx.RespondAsync("❌ No channels found in this guild.", ephemeral: true);
+                await ctx.RespondAsync("❌ No channels found in this guild.");
                 return;
             }
 
+            var guild = DiscordContext.GetGuild(ulong.Parse(guildId));
+            string guildName = guild?.Name ?? "Unknown Guild";
+
             EmbedBuilder embed = new EmbedBuilder()
-                .WithTitle($"📺 Channels in {channels[0].GuildName} (First 15)")
+                .WithTitle($"📺 Channels in {guildName} (First 15)")
                 .WithColor(DiscordColor.Blue);
 
             foreach (var channel in channels)
@@ -60,11 +61,11 @@ public sealed class ChannelsDemoCommands
                 );
             }
 
-            await ctx.RespondAsync("Here are the channels:", embed, ephemeral: true);
+            await ctx.RespondAsync("Here are the channels:", embed);
         }
         catch (Exception ex)
         {
-            await ctx.RespondAsync($"❌ Error listing channels: {ex.Message}", ephemeral: true);
+            await ctx.RespondAsync($"❌ Error listing channels: {ex.Message}");
         }
     }
 
@@ -78,17 +79,17 @@ public sealed class ChannelsDemoCommands
 
         if (string.IsNullOrWhiteSpace(channelId))
         {
-            await ctx.RespondAsync("❌ Could not determine channel ID.", ephemeral: true);
+            await ctx.RespondAsync("❌ Could not determine channel ID.");
             return;
         }
 
         try
         {
-            var channel = DiscordContext.GetChannel(channelId);
+            var channel = DiscordContext.GetChannel(ulong.Parse(channelId));
 
             if (channel == null)
             {
-                await ctx.RespondAsync("❌ Could not find channel information.", ephemeral: true);
+                await ctx.RespondAsync("❌ Could not find channel information.");
                 return;
             }
 
@@ -105,20 +106,23 @@ public sealed class ChannelsDemoCommands
                 _ => $"Unknown ({channel.Type})"
             };
 
+            string guildName = channel.Guild?.Name ?? "Unknown Guild";
+            ulong guildId = channel.Guild?.Id ?? 0;
+
             EmbedBuilder embed = new EmbedBuilder()
                 .WithTitle($"📺 Channel Information")
                 .AddField("Name", channel.Name, inline: true)
                 .AddField("Type", typeDescription, inline: true)
-                .AddField("ID", channel.Id, inline: true)
-                .AddField("Guild", channel.GuildName, inline: true)
-                .AddField("Guild ID", channel.GuildId, inline: true)
+                .AddField("ID", channel.Id.ToString(), inline: true)
+                .AddField("Guild", guildName, inline: true)
+                .AddField("Guild ID", guildId.ToString(), inline: true)
                 .WithColor(DiscordColor.Teal);
 
-            await ctx.RespondAsync("Here are the channels:", embed, ephemeral: true);
+            await ctx.RespondAsync("Here are the channels:", embed);
         }
         catch (Exception ex)
         {
-            await ctx.RespondAsync($"❌ Error getting channel info: {ex.Message}", ephemeral: true);
+            await ctx.RespondAsync($"❌ Error getting channel info: {ex.Message}");
         }
     }
 
@@ -128,21 +132,22 @@ public sealed class ChannelsDemoCommands
     [SlashCommand("types", "Show channel type breakdown for this guild")]
     public async Task TypesAsync(InteractionContext ctx)
     {
-        string? guildId = ctx.Event.GuildId;
+        string? guildId = ctx.GuildId;
 
         if (string.IsNullOrWhiteSpace(guildId))
         {
-            await ctx.RespondAsync("❌ This command can only be used in a guild (server).", ephemeral: true);
+            await ctx.RespondAsync("❌ This command can only be used in a guild (server).");
             return;
         }
 
         try
         {
-            var allChannels = DiscordContext.GetChannelsInGuild(guildId);
-            var categories = DiscordContext.GetCategoriesInGuild(guildId);
-            var textChannels = DiscordContext.TextChannels.Where(c => c.GuildId == guildId).ToList();
-            var voiceChannels = DiscordContext.VoiceChannels.Where(c => c.GuildId == guildId).ToList();
-            var threads = DiscordContext.Threads.Where(c => c.GuildId == guildId).ToList();
+            ulong guildIdUlong = ulong.Parse(guildId);
+            var allChannels = DiscordContext.GetChannelsInGuild(guildIdUlong);
+            var categories = DiscordContext.GetCategoriesInGuild(guildIdUlong);
+            var textChannels = DiscordContext.TextChannels.Where(c => c.Guild?.Id == guildIdUlong).ToList();
+            var voiceChannels = DiscordContext.VoiceChannels.Where(c => c.Guild?.Id == guildIdUlong).ToList();
+            var threads = DiscordContext.Threads.Where(c => c.Guild?.Id == guildIdUlong).ToList();
 
             EmbedBuilder embed = new EmbedBuilder()
                 .WithTitle("📊 Channel Type Breakdown")
@@ -153,11 +158,11 @@ public sealed class ChannelsDemoCommands
                 .AddField("📺 Total Channels", allChannels.Count.ToString(), inline: true)
                 .WithColor(DiscordColor.Green);
 
-            await ctx.RespondAsync("Here are the channels:", embed, ephemeral: true);
+            await ctx.RespondAsync("Here are the channels:", embed);
         }
         catch (Exception ex)
         {
-            await ctx.RespondAsync($"❌ Error analyzing channel types: {ex.Message}", ephemeral: true);
+            await ctx.RespondAsync($"❌ Error analyzing channel types: {ex.Message}");
         }
     }
 }

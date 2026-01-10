@@ -25,7 +25,10 @@ public sealed class ComponentsDemoCommands
             new Button("Danger", "components:danger", style: 4) // Danger
         ];
 
-        await ctx.RespondAsync("Component demo: click a button.", comps);
+        var builder = new MessageBuilder()
+            .WithContent("Component demo: click a button.")
+            .WithComponents(comps);
+        await ctx.RespondAsync(builder);
     }
 
     /// <summary>
@@ -50,13 +53,17 @@ public sealed class ComponentsDemoCommands
             )
         ];
 
-        await ctx.RespondAsync("Select demo: choose a color.", comps);
+        var builder = new MessageBuilder()
+            .WithContent("Select demo: choose a color.")
+            .WithComponents(comps);
+        await ctx.RespondAsync(builder);
     }
 
     /// <summary>
     /// Opens a modal from a slash command. Do not defer so modal can be the initial response.
     /// </summary>
     [SlashCommand("modal", "Open a modal with text inputs")]
+    [NoDefer]
     public Task ModalAsync(InteractionContext ctx)
     {
         return ctx.OpenModalAsync(customId: "modal:feedback", title: "Feedback",
@@ -113,6 +120,7 @@ public sealed class ComponentsDemoCommands
 
     // To open a modal from a component click, do not defer; modals cannot be opened after deferral.
     [ComponentHandler("components:openmodal")]
+    [NoDefer]
     public Task OnOpenModalAsync(InteractionContext ctx)
     {
         return ctx.OpenModalAsync(
@@ -135,6 +143,6 @@ public sealed class ComponentsDemoCommands
             .WithDescription(message)
             .WithColor(DiscordColor.Yellow);
 
-        await ctx.RespondAsync("Thanks for your feedback!", embed, ephemeral: true);
+        await ctx.RespondAsync("Thanks for your feedback!", embed);
     }
 }
